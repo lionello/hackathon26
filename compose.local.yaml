@@ -2,7 +2,7 @@ services:
   web:
     build:
       target: build
-    command: ["pnpm", "--filter", "@flyer-watch/web", "dev"]
+    command: ["sh", "-c", "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/web dev"]
     volumes:
       - .:/app
       - /app/node_modules
@@ -14,7 +14,7 @@ services:
   worker:
     build:
       target: build
-    command: ["pnpm", "--filter", "@flyer-watch/worker", "dev"]
+    command: ["sh", "-c", "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/worker dev"]
     volumes:
       - .:/app
       - /app/node_modules
