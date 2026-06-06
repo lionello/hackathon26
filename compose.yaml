@@ -45,6 +45,7 @@ services:
         condition: service_completed_successfully
 
   worker:
+    domainname: flyerping.click
     x-defang-llm: true
     build:
       context: .
