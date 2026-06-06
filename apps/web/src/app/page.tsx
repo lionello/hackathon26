@@ -19,11 +19,10 @@ export default async function HomePage() {
   const matchesByWatchItem = groupMatchesByWatchItem(matches);
 
   const availableDeals = matches.filter(({ item }) => item.price !== null);
-  const cheapest = availableDeals.reduce<number | null>((min, { item }) => {
-    if (item.price === null) return min;
-    return min === null ? item.price : Math.min(min, item.price);
-  }, null);
   const storeCount = new Set(matches.map(({ item }) => item.store)).size;
+  const queriesWithDeals = watchItems.filter((watchItem) =>
+    (matchesByWatchItem.get(watchItem.id) ?? []).some(({ item }) => item.price !== null)
+  ).length;
 
   return (
     <main className="shell">
@@ -54,8 +53,8 @@ export default async function HomePage() {
           <span className="stat-label">Stores with matches</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{cheapest === null ? "—" : `$${cheapest.toFixed(2)}`}</span>
-          <span className="stat-label">Lowest price found</span>
+          <span className="stat-value">{queriesWithDeals}</span>
+          <span className="stat-label">Queries with deals</span>
         </div>
       </section>
 
