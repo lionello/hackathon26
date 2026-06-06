@@ -40,4 +40,4 @@ services:
     provider:
       type: model
       options:
-        model: ai/gemma3
+        model: ai/qwen3-vl:4B-UD-Q4_K_XL
