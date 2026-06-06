@@ -12,7 +12,15 @@ export async function GET(request: Request) {
     if (!pkceCodeVerifier || !expectedState) {
       redirectToAuthError("Missing sign-in state", "The sign-in session expired or was opened without the original login tab.");
     }
-    const tokens = await oidc.authorizationCodeGrant(config, new URL(request.url), {
+    // openid-client derives the token-exchange redirect_uri from this URL's
+    // origin+path (it strips the query). Behind a TLS-terminating proxy
+    // request.url is the internal http://host:3000 URL, which would not match
+    // the redirect_uri sent at the authorize step and yields invalid_grant.
+    // Rebuild from PUBLIC_BASE_URL so it matches the login route exactly.
+    const baseUrl = getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000");
+    const callbackUrl = new URL(`${baseUrl}/auth/callback`);
+    callbackUrl.search = new URL(request.url).search;
+    const tokens = await oidc.authorizationCodeGrant(config, callbackUrl, {
       pkceCodeVerifier,
       expectedState
     });
