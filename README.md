@@ -4,6 +4,8 @@ Multi-user supermarket flyer watcher for Vancouver BC. The web app renders
 Postgres-cached flyer data only; the worker owns scraping, cache warming, vision
 extraction, and SMTP email digests.
 
+<img width="1128" height="610" alt="image" src="https://github.com/user-attachments/assets/ca2c2261-9905-42d0-b70f-61920198d337" />
+
 ## Local setup
 
 ```sh
