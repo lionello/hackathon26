@@ -59,7 +59,7 @@ services:
       SMTP_USER: AKIAST4UKDUZVVH4CPS5
       SMTP_PASSWORD:
       SMTP_SECURE: ${SMTP_SECURE:-false}
-      VISION_BASE_URL: ${VISION_BASE_URL:-http://ai_runner/v1}
+      VISION_BASE_URL: ${VISION_BASE_URL:-http://ai_runner:4000/v1}
       VISION_MODEL: ${VISION_MODEL:-qwen.qwen3-vl-235b-a22b}
       VISION_API_KEY: ${VISION_API_KEY:-bedrock}
       WORKER_SWEEP_HOURS: ${WORKER_SWEEP_HOURS:-6}
