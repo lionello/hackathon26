@@ -1,7 +1,8 @@
 import { findMatches, getPool, type SearchContext, type WatchItem } from "@flyer-watch/core";
-import { addWatchItem, removeWatchItem } from "./actions";
+import { addWatchItem, removeWatchItem, updateWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
+import { SubmitOnEnterInput } from "./components/submit-on-enter-input";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export default async function HomePage() {
   const watchItems = await loadWatchItems(session.userId);
   const ctx = await loadSearchContext(session.userId, user?.postal_code ?? "V6B 1A1");
   const matches = await findMatches(watchItems, ctx, { cacheOnly: true });
+  const matchesByWatchItem = groupMatchesByWatchItem(matches);
 
   const availableDeals = matches.filter(({ item }) => item.price !== null);
   const cheapest = availableDeals.reduce<number | null>((min, { item }) => {
@@ -62,27 +64,9 @@ export default async function HomePage() {
           <section className="panel">
             <h2>Add Watch</h2>
             <form className="stack" action={addWatchItem}>
-              <label>Item <input name="query" placeholder="milk, tofu, chicken" /></label>
+              <label>Item <SubmitOnEnterInput name="query" placeholder="milk, tofu, chicken" /></label>
               <button className="button" type="submit">Watch item</button>
             </form>
-          </section>
-
-          <section className="panel">
-            <h2>Watched Items</h2>
-            <div className="stack">
-              {watchItems.length === 0 ? <p className="muted">No watched items yet.</p> : null}
-              {watchItems.map((item) => (
-                <div className="watch-row" key={item.id}>
-                  <span className="watch-query">{item.query}</span>
-                  <form action={removeWatchItem}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <button className="button button-ghost watch-remove" type="submit" aria-label={`Remove ${item.query}`}>
-                      Remove
-                    </button>
-                  </form>
-                </div>
-              ))}
-            </div>
           </section>
 
           <section className="panel panel-soft">
@@ -96,26 +80,62 @@ export default async function HomePage() {
         </aside>
 
         <section className="panel">
-          <div className="panel-head">
-            <h2>Cached Deals</h2>
-            <span className="muted">{availableDeals.length} live</span>
+          <h2>Watched Queries</h2>
+          <div className="watch-list">
+            {watchItems.length === 0 ? <p className="muted">No watched items yet.</p> : null}
+            {watchItems.map((watchItem) => {
+              const queryMatches = matchesByWatchItem.get(watchItem.id) ?? [];
+              return (
+                <article className="watch-card" key={watchItem.id}>
+                  <div className="watch-head">
+                    <form className="query-form" action={updateWatchItem}>
+                      <input type="hidden" name="id" value={watchItem.id} />
+                      <label>
+                        Query
+                        <SubmitOnEnterInput name="query" defaultValue={watchItem.query} />
+                      </label>
+                      <button className="button secondary" type="submit">Save</button>
+                    </form>
+                    <form action={removeWatchItem}>
+                      <input type="hidden" name="id" value={watchItem.id} />
+                      <button className="icon-button danger" type="submit" aria-label={`Remove ${watchItem.query}`}>
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4h8v2" />
+                          <path d="M6 6l1 18h10l1-18" />
+                          <path d="M10 11v8" />
+                          <path d="M14 11v8" />
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="query-results">
+                    <div className="result-count">{queryMatches.length} cached result{queryMatches.length === 1 ? "" : "s"}</div>
+                    {queryMatches.length === 0 ? (
+                      <p className="muted">No cached matches yet. Saving this query enqueues a worker warm-up.</p>
+                    ) : (
+                      <table className="compact-table">
+                        <thead>
+                          <tr><th>Store</th><th>Item</th><th>Price</th><th>Valid</th></tr>
+                        </thead>
+                        <tbody>
+                          {queryMatches.map(({ item }) => (
+                            <tr key={`${watchItem.id}:${item.source}:${item.source_item_id}`}>
+                              <td>{item.store}</td>
+                              <td>{item.url ? <a href={item.url}>{item.name}</a> : item.name}</td>
+                              <td className="price">{item.price === null ? "Unavailable" : `$${item.price.toFixed(2)}`}</td>
+                              <td>{[item.valid_from, item.valid_to].filter(Boolean).join(" to ") || "Current flyer"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
-          <table>
-            <thead>
-              <tr><th>Store</th><th>Item</th><th>Price</th><th>Valid</th></tr>
-            </thead>
-            <tbody>
-              {matches.map(({ item }) => (
-                <tr key={`${item.source}:${item.source_item_id}`}>
-                  <td>{item.store}</td>
-                  <td>{item.url ? <a href={item.url}>{item.name}</a> : item.name}</td>
-                  <td className="price">{item.price === null ? "Unavailable" : `$${item.price.toFixed(2)}`}</td>
-                  <td>{[item.valid_from, item.valid_to].filter(Boolean).join(" to ") || "Current flyer"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {matches.length === 0 ? <p className="muted">No cached matches yet. Add an item or update store defaults in settings to enqueue a worker warm-up.</p> : null}
         </section>
       </div>
     </main>
@@ -142,6 +162,16 @@ async function loadSearchContext(userId: string, postalCode: string): Promise<Se
       return acc;
     }, {})
   };
+}
+
+function groupMatchesByWatchItem(matches: Awaited<ReturnType<typeof findMatches>>) {
+  const grouped = new Map<string, typeof matches>();
+  for (const match of matches) {
+    const group = grouped.get(match.watchItem.id) ?? [];
+    group.push(match);
+    grouped.set(match.watchItem.id, group);
+  }
+  return grouped;
 }
 
 function EventRefresher() {
