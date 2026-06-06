@@ -1,24 +1,14 @@
 import { findMatches, getPool, type SearchContext, type WatchItem } from "@flyer-watch/core";
 import { addWatchItem, removeWatchItem, saveOnboarding } from "./actions";
 import { getSession } from "./session";
+import { Landing } from "./components/landing";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await getSession();
   if (!session) {
-    return (
-      <main className="shell">
-        <div className="topbar">
-          <div className="brand">Flyer Watch</div>
-          <a className="button" href="/auth/login">Sign in</a>
-        </div>
-        <section className="panel">
-          <h1>Vancouver flyer sale alerts</h1>
-          <p className="muted">Watch Loblaws, No Frills, Metro, Sobeys, Walmart, Whole Foods, and Sungiven. Emails are sent through SES after the worker warms cache and finds net-new deals.</p>
-        </section>
-      </main>
-    );
+    return <Landing />;
   }
 
   const user = await loadUser(session.userId);
