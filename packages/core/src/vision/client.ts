@@ -1,11 +1,15 @@
 import { getOptionalEnv } from "../env.js";
 
 export async function extractFlyerJsonFromImage(imageUrl: string): Promise<unknown> {
-  const baseUrl = getOptionalEnv("VISION_BASE_URL");
-  const model = getOptionalEnv("VISION_MODEL");
-  const apiKey = getOptionalEnv("VISION_API_KEY");
-  if (!baseUrl || !model || !apiKey) {
-    throw new Error("Vision client requires VISION_BASE_URL, VISION_MODEL, and VISION_API_KEY");
+  // The `ai_runner` model provider service injects AI_RUNNER_URL / AI_RUNNER_MODEL.
+  // VISION_* are explicit overrides (e.g. pointing at a non-Compose endpoint).
+  const baseUrl = getOptionalEnv("VISION_BASE_URL") || getOptionalEnv("AI_RUNNER_URL");
+  const model = getOptionalEnv("VISION_MODEL") || getOptionalEnv("AI_RUNNER_MODEL");
+  const apiKey = getOptionalEnv("VISION_API_KEY") || "dmr-local";
+  if (!baseUrl || !model) {
+    throw new Error(
+      "Vision client requires a base URL and model (AI_RUNNER_URL/AI_RUNNER_MODEL from the model provider, or VISION_BASE_URL/VISION_MODEL overrides)",
+    );
   }
 
   const image = await fetch(imageUrl, { signal: AbortSignal.timeout(20000) });
@@ -16,7 +20,10 @@ export async function extractFlyerJsonFromImage(imageUrl: string): Promise<unkno
   const bytes = Buffer.from(await image.arrayBuffer());
   const dataUrl = `data:${contentType};base64,${bytes.toString("base64")}`;
 
-  const response = await fetch(new URL("/chat/completions", baseUrl), {
+  // String-concat (not `new URL("/chat/completions", base)`) — a leading-slash
+  // absolute path would drop any base path like `/engines/v1`.
+  const endpoint = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
