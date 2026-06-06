@@ -34,7 +34,7 @@ services:
     environment:
       DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
       PUBLIC_BASE_URL: http://localhost:3000
-      SESSION_SECRET: change-me-in-prod
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-prod}
       CONSENTKEYS_ISSUER_URL: ${CONSENTKEYS_ISSUER_URL:-}
       CONSENTKEYS_CLIENT_ID: ${CONSENTKEYS_CLIENT_ID:-}
       CONSENTKEYS_CLIENT_SECRET: ${CONSENTKEYS_CLIENT_SECRET:-}
