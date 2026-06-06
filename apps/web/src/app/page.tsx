@@ -2,6 +2,7 @@ import { findMatches, getPool, type SearchContext, type WatchItem } from "@flyer
 import { addWatchItem, removeWatchItem, saveOnboarding, updateWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
+import { SubmitOnEnterInput } from "./components/submit-on-enter-input";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function HomePage() {
           <section className="panel">
             <h2>Add Watch</h2>
             <form className="stack" action={addWatchItem}>
-              <label>Item <input name="query" placeholder="milk, tofu, chicken" /></label>
+              <label>Item <SubmitOnEnterInput name="query" placeholder="milk, tofu, chicken" /></label>
               <button className="button" type="submit">Watch item</button>
             </form>
           </section>
@@ -64,7 +65,7 @@ export default async function HomePage() {
                       <input type="hidden" name="id" value={watchItem.id} />
                       <label>
                         Query
-                        <input name="query" defaultValue={watchItem.query} />
+                        <SubmitOnEnterInput name="query" defaultValue={watchItem.query} />
                       </label>
                       <button className="button secondary" type="submit">Save</button>
                     </form>
