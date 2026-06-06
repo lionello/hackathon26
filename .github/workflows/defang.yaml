@@ -39,15 +39,15 @@ jobs:
           command: ${{ github.event.inputs.action || 'up' }}
           project: hackathon26
           stack: ${{ github.event.inputs.stack || 'production' }}
-          compose-file: compose.yaml
+          compose-files: compose.yaml
+          config-env-vars: SESSION_SECRET CONSENTKEYS_CLIENT_SECRET
+          config-vars-init-random: POSTGRES_PASSWORD
+
       - name: Deployment Summary
         uses: DefangLabs/defang-github-action@v2
-        env:
-          CONSENTKEYS_CLIENT_SECRET: ${{ secrets.CONSENTKEYS_CLIENT_SECRET }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         with:
           command: services
           project: hackathon26
           stack: ${{ github.event.inputs.stack || 'production' }}
-          compose-file: compose.yaml
+          compose-files: compose.yaml
     environment: defang-production
