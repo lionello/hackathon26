@@ -17,11 +17,11 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -w -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test dist/**/*.test.js",
+    "test": "find dist -name '*.test.js' -print0 | xargs -0 node --test",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-sesv2": "3.948.0",
+    "nodemailer": "7.0.11",
     "openid-client": "6.8.1",
     "pg": "8.16.3",
     "zod": "4.1.13"

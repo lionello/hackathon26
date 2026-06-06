@@ -2,7 +2,7 @@
 
 Multi-user supermarket flyer watcher for Vancouver BC. The web app renders
 Postgres-cached flyer data only; the worker owns scraping, cache warming, vision
-extraction, and SES email digests.
+extraction, and SMTP email digests.
 
 ## Local setup
 
@@ -29,14 +29,26 @@ periodic sweep.
 - `CONSENTKEYS_ISSUER_URL`
 - `CONSENTKEYS_CLIENT_ID`
 - `CONSENTKEYS_CLIENT_SECRET`
-- `SES_FROM_EMAIL`
-- `AWS_REGION`
+- `MAIL_FROM`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASSWORD`
+
+Optional SMTP environment:
+
+- `SMTP_SECURE`
 
 Optional vision environment for Sungiven:
 
 - `VISION_BASE_URL`
 - `VISION_MODEL`
 - `VISION_API_KEY`
+
+Production uses Defang's `x-defang-llm` model provider, which deploys an
+OpenAI-compatible gateway to Bedrock. The default production model is
+`qwen.qwen3-vl-235b-a22b`; `VISION_API_KEY` defaults to the gateway token and
+does not need to be a Bedrock API key.
 
 ## Notes
 

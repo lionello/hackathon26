@@ -1,33 +1,39 @@
-import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
+import nodemailer, { type Transporter } from "nodemailer";
 import { getOptionalEnv, getRequiredEnv } from "../env.js";
 import type { DealMatch, UserRow } from "../types.js";
 
-let ses: SESv2Client | undefined;
+let transporter: Transporter | undefined;
 
-function getSes(): SESv2Client {
-  ses ??= new SESv2Client({ region: getOptionalEnv("AWS_REGION", "us-west-2") });
-  return ses;
+function getTransporter(): Transporter {
+  const auth = smtpAuth();
+  transporter ??= nodemailer.createTransport({
+    host: getRequiredEnv("SMTP_HOST"),
+    port: Number(getOptionalEnv("SMTP_PORT", "587")),
+    secure: parseBoolean(getOptionalEnv("SMTP_SECURE")),
+    ...(auth ? { auth } : {})
+  });
+  return transporter;
+}
+
+function smtpAuth(): { user: string; pass: string } | undefined {
+  const user = getOptionalEnv("SMTP_USER");
+  const pass = getOptionalEnv("SMTP_PASSWORD");
+  return user && pass ? { user, pass } : undefined;
 }
 
 export async function sendDealDigest(user: UserRow, deals: DealMatch[]): Promise<void> {
   if (!user.email || deals.length === 0) {
     return;
   }
-  const from = getRequiredEnv("SES_FROM_EMAIL");
+  const from = getRequiredEnv("MAIL_FROM");
   const { html, text } = renderDealDigest(deals);
-  await getSes().send(new SendEmailCommand({
-    FromEmailAddress: from,
-    Destination: { ToAddresses: [user.email] },
-    Content: {
-      Simple: {
-        Subject: { Data: `Flyer Ping found ${deals.length} sale${deals.length === 1 ? "" : "s"}` },
-        Body: {
-          Html: { Data: html },
-          Text: { Data: text }
-        }
-      }
-    }
-  }));
+  await getTransporter().sendMail({
+    from,
+    to: user.email,
+    subject: `Flyer Ping found ${deals.length} sale${deals.length === 1 ? "" : "s"}`,
+    html,
+    text
+  });
 }
 
 export function renderDealDigest(deals: DealMatch[]): { html: string; text: string } {
@@ -54,4 +60,8 @@ function escapeHtml(value: string): string {
     "\"": "&quot;",
     "'": "&#39;"
   })[char] ?? char);
+}
+
+function parseBoolean(value: string): boolean {
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
 }

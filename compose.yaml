@@ -20,7 +20,7 @@ services:
       target: runtime
     command: ["node", "packages/core/dist/init-db.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch?sslmode=${SSLMODE}
     depends_on:
       db:
         condition: service_healthy
@@ -33,7 +33,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch?sslmode=${SSLMODE}
       PUBLIC_BASE_URL: https://flyerping.click
       SESSION_SECRET: ${SESSION_SECRET:-change-me-in-prod}
       CONSENTKEYS_ISSUER_URL: https://api.consentkeys.com
@@ -50,23 +50,31 @@ services:
       target: runtime
     command: ["node", "apps/worker/dist/index.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      SES_FROM_EMAIL: alerts@flyerping.click
-      # VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch?sslmode=${SSLMODE}
+      MAIL_FROM: ${MAIL_FROM:-alerts@flyerping.click}
+      SMTP_HOST: email-smtp.us-east-1.amazonaws.com
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: AKIAST4UKDUZVVH4CPS5
+      SMTP_PASSWORD:
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      VISION_BASE_URL: ${VISION_BASE_URL:-http://ai_runner:8080/v1}
+      VISION_MODEL: ${VISION_MODEL:-qwen.qwen3-vl-235b-a22b}
+      VISION_API_KEY: ${VISION_API_KEY:-bedrock}
       WORKER_SWEEP_HOURS: ${WORKER_SWEEP_HOURS:-6}
     depends_on:
+      ai_runner:
+        condition: service_started
       release:
         condition: service_completed_successfully
-    models:
-      sungiven-vision:
-        endpoint_var: VISION_BASE_URL
-        model_var: VISION_MODEL
 
-models:
-  sungiven-vision:
-    model: ai/qwen3-vl:4B-UD-Q4_K_XL
-    context_size: 16384
+  ai_runner:
+    provider:
+      type: model
+      options:
+        model: qwen.qwen3-vl-235b-a22b
+    environment:
+      USE_MODEL_MAPPING: "false"
+    x-defang-llm: true
 
 volumes:
   pgdata:

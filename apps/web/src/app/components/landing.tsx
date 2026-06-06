@@ -14,16 +14,16 @@ const FEATURES = [
     body: "We watch every major Vancouver grocer at once so you never tab between flyers again.",
   },
   {
-    title: "Net-new deals only",
-    body: "The worker warms its cache, diffs every flyer, and surfaces only the prices that actually dropped.",
+    title: "Net-new matches only",
+    body: "The worker warms its cache, scans every flyer, and only sends items that are new to your watchlist.",
   },
   {
-    title: "Set your discount floor",
-    body: "Tell us the minimum percent off you care about. We stay quiet until a deal clears your bar.",
+    title: "No noisy discount math",
+    body: "Flyer comparison prices are unreliable, so alerts focus on the sale price printed in the flyer.",
   },
   {
-    title: "Delivered by SES",
-    body: "Clean, reliable email alerts land the moment a match appears — no app to babysit.",
+    title: "Delivered by email",
+    body: "Clean SMTP alerts land the moment a match appears — no app to babysit.",
   },
 ];
 
@@ -36,12 +36,12 @@ const STEPS = [
   {
     step: "02",
     title: "Add items to watch",
-    body: "Milk, tofu, chicken — whatever you buy. Set a minimum discount for each.",
+    body: "Milk, tofu, chicken — whatever you buy. Add the item once and we check each flyer sweep.",
   },
   {
     step: "03",
     title: "Get the alert",
-    body: "When the cache warms and a net-new deal beats your floor, the email is already on its way.",
+    body: "When the cache warms and a net-new matching sale appears, the email is already on its way.",
   },
 ];
 
@@ -66,8 +66,8 @@ export function Landing() {
           </h1>
           <p className="hero-sub text-pretty">
             Flyer Ping tracks Loblaws, No Frills, Metro, Sobeys, Walmart, Whole
-            Foods, and Sungiven. The moment a net-new sale beats your price floor,
-            an email hits your inbox.
+            Foods, and Sungiven. The moment a net-new watched item appears on
+            sale, an email hits your inbox.
           </p>
           <div className="hero-cta">
             <a className="button button-lg" href="/auth/login">
@@ -95,7 +95,7 @@ export function Landing() {
             </div>
             <div className="deal-price">
               $1.99
-              <span className="deal-off">42% off</span>
+              <span className="deal-off">This week</span>
             </div>
           </div>
           <div className="deal-row">
@@ -105,7 +105,7 @@ export function Landing() {
             </div>
             <div className="deal-price">
               $9.49
-              <span className="deal-off">30% off</span>
+              <span className="deal-off">This week</span>
             </div>
           </div>
           <div className="deal-row">
@@ -115,7 +115,7 @@ export function Landing() {
             </div>
             <div className="deal-price">
               $2.79
-              <span className="deal-off">25% off</span>
+              <span className="deal-off">This week</span>
             </div>
           </div>
         </div>
@@ -166,7 +166,7 @@ export function Landing() {
 
       <footer className="landing-footer">
         <span className="brand">Flyer Ping</span>
-        <span className="muted">Vancouver supermarket sale alerts, powered by SES.</span>
+        <span className="muted">Vancouver supermarket sale alerts, delivered by SMTP.</span>
       </footer>
     </main>
   );

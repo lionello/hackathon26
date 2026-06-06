@@ -27,8 +27,17 @@ services:
         "-c",
         "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/worker dev",
       ]
+    environment:
+      VISION_MODEL: ${VISION_MODEL:-ai/gemma3}
+      VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
     volumes:
       - .:/app
       - /app/node_modules
       - /app/apps/worker/node_modules
       - /app/packages/core/node_modules
+
+  ai_runner:
+    provider:
+      type: model
+      options:
+        model: ai/qwen3-vl:4B-UD-Q4_K_XL
