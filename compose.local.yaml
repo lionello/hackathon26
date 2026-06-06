@@ -2,7 +2,12 @@ services:
   web:
     build:
       target: build
-    command: ["sh", "-c", "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/web dev"]
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/web dev",
+      ]
     volumes:
       - .:/app
       - /app/node_modules
@@ -10,11 +15,18 @@ services:
       - /app/apps/web/.next
       - /app/apps/worker/node_modules
       - /app/packages/core/node_modules
+    environment:
+      PUBLIC_BASE_URL: http://localhost:3000
 
   worker:
     build:
       target: build
-    command: ["sh", "-c", "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/worker dev"]
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @flyer-watch/core build && pnpm --parallel --filter @flyer-watch/core --filter @flyer-watch/worker dev",
+      ]
     volumes:
       - .:/app
       - /app/node_modules

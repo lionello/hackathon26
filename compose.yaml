@@ -1,10 +1,11 @@
 services:
   db:
+    x-defang-postgres: true
     image: postgres:17
     environment:
       POSTGRES_DB: flyer_watch
       POSTGRES_USER: flyer_watch
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flyer_watch}
+      POSTGRES_PASSWORD:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +20,7 @@ services:
       target: runtime
     command: ["node", "packages/core/dist/init-db.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
     depends_on:
       db:
         condition: service_healthy
@@ -32,28 +33,27 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
-      PUBLIC_BASE_URL: http://localhost:3000
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
+      PUBLIC_BASE_URL: https://flyerping.click
       SESSION_SECRET: ${SESSION_SECRET:-change-me-in-prod}
-      CONSENTKEYS_ISSUER_URL: ${CONSENTKEYS_ISSUER_URL:-}
-      CONSENTKEYS_CLIENT_ID: ${CONSENTKEYS_CLIENT_ID:-}
-      CONSENTKEYS_CLIENT_SECRET: ${CONSENTKEYS_CLIENT_SECRET:-}
+      CONSENTKEYS_ISSUER_URL: https://api.consentkeys.com
+      CONSENTKEYS_CLIENT_ID: ck_5131645b3a16ae98fad3c5f61daaa0f1
+      CONSENTKEYS_CLIENT_SECRET:
     depends_on:
       release:
         condition: service_completed_successfully
 
   worker:
+    x-defang-llm: true
     build:
       context: .
       target: runtime
     command: ["node", "apps/worker/dist/index.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
-      AWS_REGION: ${AWS_REGION:-us-west-2}
-      SES_FROM_EMAIL: ${SES_FROM_EMAIL:-}
-      VISION_BASE_URL: ${VISION_BASE_URL:-http://model-runner.docker.internal/engines/llama.cpp/v1}
-      VISION_MODEL: ${VISION_MODEL:-ai/gemma3}
-      VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      SES_FROM_EMAIL: alerts@flyerping.click
+      # VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
       WORKER_SWEEP_HOURS: ${WORKER_SWEEP_HOURS:-6}
     depends_on:
       release:
@@ -65,7 +65,8 @@ services:
 
 models:
   sungiven-vision:
-    model: ai/gemma3
+    model: ai/qwen3-vl:4B-UD-Q4_K_XL
+    context_size: 16384
 
 volumes:
   pgdata:
