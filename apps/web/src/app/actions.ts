@@ -24,6 +24,19 @@ export async function removeWatchItem(formData: FormData): Promise<void> {
   revalidatePath("/");
 }
 
+export async function updateWatchItem(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  const id = String(formData.get("id") ?? "");
+  const query = String(formData.get("query") ?? "").trim();
+  if (!id || !query) return;
+  await getPool().query(
+    "update watch_items set query = $1 where id = $2 and user_id = $3",
+    [query, id, session.userId]
+  );
+  await enqueueWarmUserJob(session.userId);
+  revalidatePath("/");
+}
+
 export async function saveOnboarding(formData: FormData): Promise<void> {
   const session = await requireSession();
   const postalCode = String(formData.get("postalCode") ?? "V6B 1A1").trim();
