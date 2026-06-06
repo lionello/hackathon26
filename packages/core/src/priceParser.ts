@@ -30,10 +30,3 @@ export function parsePriceText(input: string | null | undefined): ParsedPrice {
     original_price: was ? Number(was[1]) : null
   };
 }
-
-export function discountPct(price: number | null, originalPrice: number | null): number | null {
-  if (!price || !originalPrice || originalPrice <= price) {
-    return null;
-  }
-  return Math.round(((originalPrice - price) / originalPrice) * 100);
-}

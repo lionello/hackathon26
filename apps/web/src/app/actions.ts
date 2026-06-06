@@ -7,11 +7,10 @@ import { requireSession } from "./session";
 export async function addWatchItem(formData: FormData): Promise<void> {
   const session = await requireSession();
   const query = String(formData.get("query") ?? "").trim();
-  const minDiscount = Number(formData.get("minDiscountPct") ?? "0");
   if (!query) return;
   await getPool().query(
-    "insert into watch_items(user_id, query, min_discount_pct) values ($1, $2, $3)",
-    [session.userId, query, Number.isFinite(minDiscount) ? minDiscount : 0]
+    "insert into watch_items(user_id, query) values ($1, $2)",
+    [session.userId, query]
   );
   await enqueueWarmUserJob(session.userId);
   revalidatePath("/");

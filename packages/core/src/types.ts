@@ -33,7 +33,6 @@ export type WatchItem = {
   id: string;
   user_id: string;
   query: string;
-  min_discount_pct: number;
 };
 
 export type UserRow = {
@@ -46,5 +45,4 @@ export type UserRow = {
 export type DealMatch = {
   watchItem: WatchItem;
   item: FlyerItem;
-  discountPct: number | null;
 };

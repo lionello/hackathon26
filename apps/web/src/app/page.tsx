@@ -54,7 +54,6 @@ export default async function HomePage() {
             <h2>Add Watch</h2>
             <form className="stack" action={addWatchItem}>
               <label>Item <input name="query" placeholder="milk, tofu, chicken" /></label>
-              <label>Minimum discount % <input name="minDiscountPct" type="number" min="0" max="100" defaultValue="0" /></label>
               <button className="button" type="submit">Watch item</button>
             </form>
           </section>
@@ -80,11 +79,11 @@ export default async function HomePage() {
               <tr><th>Store</th><th>Item</th><th>Price</th><th>Valid</th></tr>
             </thead>
             <tbody>
-              {matches.map(({ item, discountPct }) => (
+              {matches.map(({ item }) => (
                 <tr key={`${item.source}:${item.source_item_id}`}>
                   <td>{item.store}</td>
                   <td>{item.url ? <a href={item.url}>{item.name}</a> : item.name}</td>
-                  <td className="price">{item.price === null ? "Unavailable" : `$${item.price.toFixed(2)}`}{discountPct === null ? "" : ` / ${discountPct}% off`}</td>
+                  <td className="price">{item.price === null ? "Unavailable" : `$${item.price.toFixed(2)}`}</td>
                   <td>{[item.valid_from, item.valid_to].filter(Boolean).join(" to ") || "Current flyer"}</td>
                 </tr>
               ))}

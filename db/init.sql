@@ -13,9 +13,10 @@ CREATE TABLE IF NOT EXISTS watch_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   query text NOT NULL,
-  min_discount_pct integer NOT NULL DEFAULT 0 CHECK (min_discount_pct >= 0 AND min_discount_pct <= 100),
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE watch_items DROP COLUMN IF EXISTS min_discount_pct;
 
 CREATE INDEX IF NOT EXISTS watch_items_user_id_idx ON watch_items(user_id);
 

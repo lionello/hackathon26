@@ -31,16 +31,14 @@ export async function sendDealDigest(user: UserRow, deals: DealMatch[]): Promise
 }
 
 export function renderDealDigest(deals: DealMatch[]): { html: string; text: string } {
-  const rows = deals.map(({ item, discountPct }) => {
+  const rows = deals.map(({ item }) => {
     const price = item.price === null ? "price unavailable" : `$${item.price.toFixed(2)}`;
-    const discount = discountPct === null ? "" : ` (${discountPct}% off)`;
     const href = item.url ?? "#";
-    return `<tr><td>${escapeHtml(item.store)}</td><td><a href="${escapeHtml(href)}">${escapeHtml(item.name)}</a></td><td>${price}${discount}</td></tr>`;
+    return `<tr><td>${escapeHtml(item.store)}</td><td><a href="${escapeHtml(href)}">${escapeHtml(item.name)}</a></td><td>${price}</td></tr>`;
   }).join("");
-  const text = deals.map(({ item, discountPct }) => {
+  const text = deals.map(({ item }) => {
     const price = item.price === null ? "price unavailable" : `$${item.price.toFixed(2)}`;
-    const discount = discountPct === null ? "" : ` (${discountPct}% off)`;
-    return `${item.store}: ${item.name} - ${price}${discount} ${item.url ?? ""}`;
+    return `${item.store}: ${item.name} - ${price} ${item.url ?? ""}`;
   }).join("\n");
   return {
     html: `<table><thead><tr><th>Store</th><th>Item</th><th>Price</th></tr></thead><tbody>${rows}</tbody></table>`,
