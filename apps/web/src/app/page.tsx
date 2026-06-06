@@ -1,5 +1,5 @@
 import { findMatches, getPool, type SearchContext, type WatchItem } from "@flyer-watch/core";
-import { addWatchItem, removeWatchItem, saveOnboarding } from "./actions";
+import { addWatchItem, removeWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
 
@@ -16,6 +16,13 @@ export default async function HomePage() {
   const ctx = await loadSearchContext(session.userId, user?.postal_code ?? "V6B 1A1");
   const matches = await findMatches(watchItems, ctx, { cacheOnly: true });
 
+  const availableDeals = matches.filter(({ item }) => item.price !== null);
+  const cheapest = availableDeals.reduce<number | null>((min, { item }) => {
+    if (item.price === null) return min;
+    return min === null ? item.price : Math.min(min, item.price);
+  }, null);
+  const storeCount = new Set(matches.map(({ item }) => item.store)).size;
+
   return (
     <main className="shell">
       <div className="topbar">
@@ -23,23 +30,35 @@ export default async function HomePage() {
           <div className="brand">Flyer Watch</div>
           <div className="muted">Signed in as {user?.email ?? session.consentkeysSub}</div>
         </div>
-        <a className="button secondary" href="/auth/logout">Sign out</a>
+        <div className="topbar-actions">
+          <a className="button button-ghost" href="/settings">Settings</a>
+          <a className="button secondary" href="/auth/logout">Sign out</a>
+        </div>
       </div>
 
       <EventRefresher />
 
+      <section className="stat-row">
+        <div className="stat-card">
+          <span className="stat-value">{watchItems.length}</span>
+          <span className="stat-label">Watched items</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{availableDeals.length}</span>
+          <span className="stat-label">Live deals cached</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{storeCount}</span>
+          <span className="stat-label">Stores with matches</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{cheapest === null ? "—" : `$${cheapest.toFixed(2)}`}</span>
+          <span className="stat-label">Lowest price found</span>
+        </div>
+      </section>
+
       <div className="grid">
         <aside className="stack">
-          <section className="panel">
-            <h2>Store Defaults</h2>
-            <form className="stack" action={saveOnboarding}>
-              <label>Postal code <input name="postalCode" defaultValue={user?.postal_code ?? "V6B 1A1"} /></label>
-              <label>Whole Foods store id <input name="wholeFoodsStore" defaultValue={ctx.storeIds.wholefoods?.[0] ?? "10244"} /></label>
-              <label>Sungiven store <input name="sungivenStore" defaultValue={ctx.storeIds.sungiven?.[0] ?? "vancouver"} /></label>
-              <button className="button" type="submit">Save</button>
-            </form>
-          </section>
-
           <section className="panel">
             <h2>Add Watch</h2>
             <form className="stack" action={addWatchItem}>
@@ -53,17 +72,34 @@ export default async function HomePage() {
             <div className="stack">
               {watchItems.length === 0 ? <p className="muted">No watched items yet.</p> : null}
               {watchItems.map((item) => (
-                <form key={item.id} action={removeWatchItem}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <button className="button secondary" type="submit">Remove {item.query}</button>
-                </form>
+                <div className="watch-row" key={item.id}>
+                  <span className="watch-query">{item.query}</span>
+                  <form action={removeWatchItem}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <button className="button button-ghost watch-remove" type="submit" aria-label={`Remove ${item.query}`}>
+                      Remove
+                    </button>
+                  </form>
+                </div>
               ))}
             </div>
+          </section>
+
+          <section className="panel panel-soft">
+            <h2>Store defaults</h2>
+            <p className="muted">
+              Postal code <strong>{user?.postal_code ?? "V6B 1A1"}</strong> · Whole Foods{" "}
+              <strong>{ctx.storeIds.wholefoods?.[0] ?? "10244"}</strong>
+            </p>
+            <a className="button button-ghost" href="/settings">Edit in settings</a>
           </section>
         </aside>
 
         <section className="panel">
-          <h2>Cached Deals</h2>
+          <div className="panel-head">
+            <h2>Cached Deals</h2>
+            <span className="muted">{availableDeals.length} live</span>
+          </div>
           <table>
             <thead>
               <tr><th>Store</th><th>Item</th><th>Price</th><th>Valid</th></tr>
@@ -79,7 +115,7 @@ export default async function HomePage() {
               ))}
             </tbody>
           </table>
-          {matches.length === 0 ? <p className="muted">No cached matches yet. Add an item or save store defaults to enqueue a worker warm-up.</p> : null}
+          {matches.length === 0 ? <p className="muted">No cached matches yet. Add an item or update store defaults in settings to enqueue a worker warm-up.</p> : null}
         </section>
       </div>
     </main>

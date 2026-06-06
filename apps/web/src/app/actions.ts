@@ -22,6 +22,7 @@ export async function removeWatchItem(formData: FormData): Promise<void> {
   await getPool().query("delete from watch_items where id = $1 and user_id = $2", [id, session.userId]);
   await enqueueWarmUserJob(session.userId);
   revalidatePath("/");
+  revalidatePath("/settings");
 }
 
 export async function saveOnboarding(formData: FormData): Promise<void> {
@@ -39,4 +40,5 @@ export async function saveOnboarding(formData: FormData): Promise<void> {
   );
   await enqueueWarmUserJob(session.userId);
   revalidatePath("/");
+  revalidatePath("/settings");
 }
