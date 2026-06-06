@@ -53,20 +53,24 @@ services:
       DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD}@db:5432/flyer_watch
       AWS_REGION: ${AWS_REGION:-us-east-1}
       SES_FROM_EMAIL: alerts@flyerping.click
-      # VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
+      VISION_BASE_URL: ${VISION_BASE_URL:-http://ai_runner:8080/v1}
+      VISION_MODEL: ${VISION_MODEL:-qwen.qwen3-vl-235b-a22b}
+      VISION_API_KEY: ${VISION_API_KEY:-bedrock}
       WORKER_SWEEP_HOURS: ${WORKER_SWEEP_HOURS:-6}
     depends_on:
+      ai_runner:
+        condition: service_started
       release:
         condition: service_completed_successfully
-    models:
-      sungiven-vision:
-        endpoint_var: VISION_BASE_URL
-        model_var: VISION_MODEL
 
-models:
-  sungiven-vision:
-    model: ai/qwen3-vl:4B-UD-Q4_K_XL
-    context_size: 16384
+  ai_runner:
+    provider:
+      type: model
+      options:
+        model: qwen.qwen3-vl-235b-a22b
+    environment:
+      USE_MODEL_MAPPING: "false"
+    x-defang-llm: true
 
 volumes:
   pgdata:

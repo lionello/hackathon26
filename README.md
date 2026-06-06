@@ -38,6 +38,11 @@ Optional vision environment for Sungiven:
 - `VISION_MODEL`
 - `VISION_API_KEY`
 
+Production uses Defang's `x-defang-llm` model provider, which deploys an
+OpenAI-compatible gateway to Bedrock. The default production model is
+`qwen.qwen3-vl-235b-a22b`; `VISION_API_KEY` defaults to the gateway token and
+does not need to be a Bedrock API key.
+
 ## Notes
 
 Flipp support uses an unofficial endpoint. It is isolated behind the shared
