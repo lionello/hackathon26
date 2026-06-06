@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: flyer_watch
       POSTGRES_USER: flyer_watch
-      POSTGRES_PASSWORD: flyer_watch
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flyer_watch}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +19,7 @@ services:
       target: runtime
     command: ["node", "packages/core/dist/init-db.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
       PUBLIC_BASE_URL: http://localhost:3000
       SESSION_SECRET: change-me-in-prod
       CONSENTKEYS_ISSUER_URL: ${CONSENTKEYS_ISSUER_URL:-}
@@ -48,7 +48,7 @@ services:
       target: runtime
     command: ["node", "apps/worker/dist/index.js"]
     environment:
-      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+      DATABASE_URL: postgres://flyer_watch:${POSTGRES_PASSWORD:-flyer_watch}@db:5432/flyer_watch
       AWS_REGION: ${AWS_REGION:-us-west-2}
       SES_FROM_EMAIL: ${SES_FROM_EMAIL:-}
       VISION_BASE_URL: ${VISION_BASE_URL:-http://model-runner.docker.internal/engines/llama.cpp/v1}
