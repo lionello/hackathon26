@@ -27,7 +27,7 @@ export default async function HomePage() {
     <main className="shell">
       <div className="topbar">
         <div>
-          <div className="brand">Flyer Watch</div>
+          <div className="brand">Flyer Ping</div>
           <div className="muted">Signed in as {user?.email ?? session.consentkeysSub}</div>
         </div>
         <div className="topbar-actions">

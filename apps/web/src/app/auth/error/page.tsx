@@ -13,7 +13,7 @@ export default async function AuthErrorPage({ searchParams }: Props) {
   return (
     <main className="shell">
       <div className="topbar">
-        <div className="brand">Flyer Watch</div>
+        <div className="brand">Flyer Ping</div>
         <a className="button secondary" href="/">Back</a>
       </div>
 

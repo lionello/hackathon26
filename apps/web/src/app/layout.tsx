@@ -5,7 +5,7 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Flyer Watch — Vancouver grocery deal alerts",
+  title: "Flyer Ping — Vancouver grocery deal alerts",
   description:
     "Watch Loblaws, No Frills, Metro, Sobeys, Walmart, Whole Foods, and Sungiven. Get an email the moment a net-new sale beats your price floor."
 };

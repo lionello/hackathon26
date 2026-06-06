@@ -13,7 +13,7 @@ export default async function SettingsPage() {
     <main className="shell">
       <div className="topbar">
         <div>
-          <div className="brand">Flyer Watch</div>
+          <div className="brand">Flyer Ping</div>
           <div className="muted">Store &amp; location settings</div>
         </div>
         <a className="button secondary" href="/">Back to dashboard</a>

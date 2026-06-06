@@ -20,7 +20,7 @@ export async function sendDealDigest(user: UserRow, deals: DealMatch[]): Promise
     Destination: { ToAddresses: [user.email] },
     Content: {
       Simple: {
-        Subject: { Data: `Flyer Watch found ${deals.length} sale${deals.length === 1 ? "" : "s"}` },
+        Subject: { Data: `Flyer Ping found ${deals.length} sale${deals.length === 1 ? "" : "s"}` },
         Body: {
           Html: { Data: html },
           Text: { Data: text }
