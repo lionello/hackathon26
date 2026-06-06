@@ -77,6 +77,10 @@ services:
     environment:
       USE_MODEL_MAPPING: "false"
     x-defang-llm: true
+    deploy:
+      resources:
+        reservations:
+          memory: 1g
 
 volumes:
   pgdata:
