@@ -1,0 +1,24 @@
+{
+  "name": "@flyer-watch/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "probe": "tsx src/bin/probe.ts",
+    "probe:vision": "tsx src/bin/probe-vision.ts",
+    "generate:sungiven-golden": "tsx src/scripts/generate-sungiven-golden.ts",
+    "test": "pnpm build && node --test dist/**/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flyer-watch/core": "workspace:*",
+    "pg": "8.16.3",
+    "tsx": "4.21.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.6"
+  }
+}

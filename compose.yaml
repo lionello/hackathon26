@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: flyer_watch
+      POSTGRES_USER: flyer_watch
+      POSTGRES_PASSWORD: flyer_watch
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flyer_watch -d flyer_watch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  release:
+    build:
+      context: .
+      target: runtime
+    command: ["node", "packages/core/dist/init-db.js"]
+    environment:
+      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      target: runtime
+    command: ["pnpm", "--filter", "@flyer-watch/web", "start"]
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+      PUBLIC_BASE_URL: http://localhost:3000
+      SESSION_SECRET: change-me-in-prod
+      CONSENTKEYS_ISSUER_URL: ${CONSENTKEYS_ISSUER_URL:-}
+      CONSENTKEYS_CLIENT_ID: ${CONSENTKEYS_CLIENT_ID:-}
+      CONSENTKEYS_CLIENT_SECRET: ${CONSENTKEYS_CLIENT_SECRET:-}
+    depends_on:
+      release:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    command: ["node", "apps/worker/dist/index.js"]
+    environment:
+      DATABASE_URL: postgres://flyer_watch:flyer_watch@db:5432/flyer_watch
+      AWS_REGION: ${AWS_REGION:-us-west-2}
+      SES_FROM_EMAIL: ${SES_FROM_EMAIL:-}
+      VISION_BASE_URL: ${VISION_BASE_URL:-http://model-runner.docker.internal/engines/llama.cpp/v1}
+      VISION_MODEL: ${VISION_MODEL:-ai/gemma3}
+      VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
+      WORKER_SWEEP_HOURS: ${WORKER_SWEEP_HOURS:-6}
+    depends_on:
+      release:
+        condition: service_completed_successfully
+    models:
+      sungiven-vision:
+        endpoint_var: VISION_BASE_URL
+        model_var: VISION_MODEL
+
+models:
+  sungiven-vision:
+    model: ai/gemma3
+
+volumes:
+  pgdata:

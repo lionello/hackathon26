@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      target: build
+    command: ["pnpm", "--filter", "@flyer-watch/web", "dev"]
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+      - /app/apps/worker/node_modules
+      - /app/packages/core/node_modules
+
+  worker:
+    build:
+      target: build
+    command: ["pnpm", "--filter", "@flyer-watch/worker", "dev"]
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/worker/node_modules
+      - /app/packages/core/node_modules
