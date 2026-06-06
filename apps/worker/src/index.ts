@@ -60,17 +60,19 @@ async function drainJobs(): Promise<void> {
       if (row.kind === "warm-user" && row.user_id) {
         await warmUser(row.user_id);
       }
-      await getPool().query("update worker_jobs set status = 'done', finished_at = now(), updated_at = now() where id = $1", [row.id]);
+      await getPool().query("update worker_jobs set status = 'done', last_error = null, finished_at = now(), updated_at = now() where id = $1", [row.id]);
     } catch (error) {
       console.error("job failed", row.id, error);
       await getPool().query(
         `update worker_jobs
          set status = case when attempts >= 5 then 'failed' else 'pending' end,
              run_after = now() + interval '5 minutes',
+             last_error = $2,
              updated_at = now()
          where id = $1`,
-        [row.id]
+        [row.id, errorMessage(error)]
       );
+      if (row.user_id) await notifyUser(row.user_id);
     }
   }
 }
@@ -142,6 +144,11 @@ async function insertNotification(client: PoolClient, userId: string, match: Dea
     [userId, match.watchItem.id, match.item.source, match.item.source_item_id]
   );
   return (result.rowCount ?? 0) > 0;
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message.slice(0, 500);
+  return String(error).slice(0, 500);
 }
 
 process.on("SIGTERM", () => {

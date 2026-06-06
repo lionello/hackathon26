@@ -60,9 +60,13 @@ CREATE TABLE IF NOT EXISTS worker_jobs (
   run_after timestamptz NOT NULL DEFAULT now(),
   locked_at timestamptz,
   locked_by text,
+  last_error text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   finished_at timestamptz
 );
 
+ALTER TABLE worker_jobs ADD COLUMN IF NOT EXISTS last_error text;
+
 CREATE INDEX IF NOT EXISTS worker_jobs_claim_idx ON worker_jobs(status, run_after, created_at);
+CREATE INDEX IF NOT EXISTS worker_jobs_user_idx ON worker_jobs(user_id, status, updated_at DESC);

@@ -1,4 +1,4 @@
-import { findMatches, getPool, type SearchContext, type WatchItem } from "@flyer-watch/core";
+import { findMatches, getPool, getUserJobStatus, type SearchContext, type WatchItem } from "@flyer-watch/core";
 import { addWatchItem, removeWatchItem, updateWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
@@ -18,6 +18,7 @@ export default async function HomePage() {
   const ctx = await loadSearchContext(session.userId, user?.postal_code ?? "V6B 1A1");
   const matches = await findMatches(watchItems, ctx, { cacheOnly: true });
   const matchesByWatchItem = groupMatchesByWatchItem(matches);
+  const jobStatus = await getUserJobStatus(session.userId);
 
   const availableDeals = matches.filter(({ item }) => item.price !== null);
   const storeCount = new Set(matches.map(({ item }) => item.store)).size;
@@ -39,6 +40,20 @@ export default async function HomePage() {
       </div>
 
       <EventRefresher />
+
+      {jobStatus.lastError ? (
+        <div className="error-banner" role="alert">
+          <div className="error-banner-title">
+            Last flyer fetch failed · {jobStatus.lastError.at.toLocaleString()}
+          </div>
+          <div>
+            {jobStatus.pending
+              ? "A new fetch is queued — results will refresh automatically when it succeeds."
+              : "The next sweep will retry. You can also save another query to re-queue."}
+          </div>
+          <pre>{jobStatus.lastError.message}</pre>
+        </div>
+      ) : null}
 
       <section className="stat-row">
         <div className="stat-card">
@@ -111,9 +126,13 @@ export default async function HomePage() {
                   </div>
 
                   <div className="query-results">
-                    <div className="result-count">{queryMatches.length} cached result{queryMatches.length === 1 ? "" : "s"}</div>
+                    <div className="result-count">
+                      {queryMatches.length} cached result{queryMatches.length === 1 ? "" : "s"}
+                      {jobStatus.pending ? <span className="status-pill warming">Fetching…</span> : null}
+                      {!jobStatus.pending && jobStatus.lastError ? <span className="status-pill error">Last fetch failed</span> : null}
+                    </div>
                     {queryMatches.length === 0 ? (
-                      <p className="muted">No cached matches yet. Saving this query enqueues a worker warm-up.</p>
+                      <p className="muted">{emptyStateCopy(jobStatus)}</p>
                     ) : (
                       <table className="compact-table">
                         <thead>
@@ -172,6 +191,12 @@ function groupMatchesByWatchItem(matches: Awaited<ReturnType<typeof findMatches>
     grouped.set(match.watchItem.id, group);
   }
   return grouped;
+}
+
+function emptyStateCopy(jobStatus: Awaited<ReturnType<typeof getUserJobStatus>>): string {
+  if (jobStatus.pending) return "Fetching flyers… results will appear automatically.";
+  if (jobStatus.lastError) return "Last fetch failed — see the banner above for details. A retry is scheduled.";
+  return "No cached matches yet.";
 }
 
 function EventRefresher() {

@@ -342,6 +342,64 @@ th {
   font-weight: 700;
 }
 
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.status-pill.warming {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.status-pill.warming::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.status-pill.error {
+  background: #fbe5da;
+  color: var(--warn);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.error-banner {
+  background: #fbe5da;
+  border: 1px solid #f0c1a8;
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.error-banner .error-banner-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.error-banner pre {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .compact-table th,
 .compact-table td {
   padding: 8px 6px;
