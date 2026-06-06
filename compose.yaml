@@ -27,6 +27,7 @@ services:
         condition: service_healthy
 
   web:
+    domainname: flyerping.click
     build:
       context: .
       target: runtime
@@ -45,7 +46,6 @@ services:
         condition: service_completed_successfully
 
   worker:
-    domainname: flyerping.click
     x-defang-llm: true
     build:
       context: .
