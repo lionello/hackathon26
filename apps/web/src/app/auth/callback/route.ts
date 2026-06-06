@@ -1,37 +1,45 @@
 import { getOidcConfig, getOptionalEnv, getPool, oidc, sessionCookieName, sessionCookieOptions, signSession } from "@flyer-watch/core";
 import { cookies, headers } from "next/headers";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 
 export async function GET(request: Request) {
-  const config = await getOidcConfig();
-  const jar = await cookies();
-  const pkceCodeVerifier = jar.get("fw_pkce")?.value;
-  const expectedState = jar.get("fw_state")?.value;
-  if (!pkceCodeVerifier || !expectedState) {
-    throw new Error("Missing OIDC PKCE verifier or state cookie");
+  try {
+    const config = await getOidcConfig();
+    const jar = await cookies();
+    const pkceCodeVerifier = jar.get("fw_pkce")?.value;
+    const expectedState = jar.get("fw_state")?.value;
+    if (!pkceCodeVerifier || !expectedState) {
+      redirectToAuthError("Missing sign-in state", "The sign-in session expired or was opened without the original login tab.");
+    }
+    const tokens = await oidc.authorizationCodeGrant(config, new URL(request.url), {
+      pkceCodeVerifier,
+      expectedState
+    });
+    const claims = tokens.claims();
+    const sub = claims?.sub;
+    if (!sub) {
+      redirectToAuthError("Missing user key", "ConsentKeys did not return a subject claim for this sign-in.");
+    }
+    const email = typeof claims.email === "string" ? claims.email : null;
+    const user = await upsertUser(sub, email);
+    jar.set(sessionCookieName, signSession({ userId: user.id, consentkeysSub: sub }), {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: sessionCookieOptions().includes("Secure"),
+      maxAge: 60 * 60 * 24 * 30
+    });
+    jar.delete("fw_pkce");
+    jar.delete("fw_state");
+    await headers();
+    redirect(getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000"));
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    redirectToAuthError("Sign-in failed", authErrorDetails(error));
   }
-  const tokens = await oidc.authorizationCodeGrant(config, new URL(request.url), {
-    pkceCodeVerifier,
-    expectedState
-  });
-  const claims = tokens.claims();
-  const sub = claims?.sub;
-  if (!sub) {
-    throw new Error("ConsentKeys response did not include sub");
-  }
-  const email = typeof claims.email === "string" ? claims.email : null;
-  const user = await upsertUser(sub, email);
-  jar.set(sessionCookieName, signSession({ userId: user.id, consentkeysSub: sub }), {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    secure: sessionCookieOptions().includes("Secure"),
-    maxAge: 60 * 60 * 24 * 30
-  });
-  jar.delete("fw_pkce");
-  jar.delete("fw_state");
-  await headers();
-  redirect(getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000"));
 }
 
 async function upsertUser(sub: string, email: string | null): Promise<{ id: string }> {
@@ -44,4 +52,25 @@ async function upsertUser(sub: string, email: string | null): Promise<{ id: stri
     [sub, email]
   );
   return result.rows[0]!;
+}
+
+function redirectToAuthError(message: string, details: string): never {
+  const params = new URLSearchParams({ message, details });
+  redirect(`/auth/error?${params}`);
+}
+
+function authErrorDetails(error: unknown): string {
+  if (!error || typeof error !== "object") {
+    return String(error);
+  }
+  const record = error as Record<string, unknown>;
+  const details = {
+    name: record.name,
+    code: record.code,
+    error: record.error,
+    status: record.status,
+    error_description: record.error_description,
+    message: record.message
+  };
+  return JSON.stringify(details, null, 2);
 }

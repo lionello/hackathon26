@@ -92,6 +92,22 @@ input {
   font: inherit;
 }
 
+summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+pre {
+  max-width: 100%;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f2f4f1;
+  white-space: pre-wrap;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
