@@ -34,13 +34,19 @@ jobs:
         uses: DefangLabs/defang-github-action@v2
         env:
           CONSENTKEYS_CLIENT_SECRET: ${{ secrets.CONSENTKEYS_CLIENT_SECRET }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
         with:
           command: ${{ github.event.inputs.action || 'up' }}
           project: hackathon26
           stack: ${{ github.event.inputs.stack || 'production' }}
           compose-files: compose.yaml
-          config-env-vars: SESSION_SECRET CONSENTKEYS_CLIENT_SECRET
+          config-env-vars: SESSION_SECRET CONSENTKEYS_CLIENT_SECRET MAIL_FROM SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_SECURE
           config-vars-init-random: POSTGRES_PASSWORD
 
       - name: Deployment Summary

@@ -2,7 +2,7 @@
 
 Multi-user supermarket flyer watcher for Vancouver BC. The web app renders
 Postgres-cached flyer data only; the worker owns scraping, cache warming, vision
-extraction, and SES email digests.
+extraction, and SMTP email digests.
 
 ## Local setup
 
@@ -29,8 +29,15 @@ periodic sweep.
 - `CONSENTKEYS_ISSUER_URL`
 - `CONSENTKEYS_CLIENT_ID`
 - `CONSENTKEYS_CLIENT_SECRET`
-- `SES_FROM_EMAIL`
-- `AWS_REGION`
+- `MAIL_FROM`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASSWORD`
+
+Optional SMTP environment:
+
+- `SMTP_SECURE`
 
 Optional vision environment for Sungiven:
 

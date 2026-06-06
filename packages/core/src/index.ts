@@ -2,7 +2,7 @@ export * from "./auth/oidc.js";
 export * from "./auth/session.js";
 export * from "./cache.js";
 export * from "./db.js";
-export * from "./email/ses.js";
+export * from "./email/smtp.js";
 export * from "./env.js";
 export * from "./jobs.js";
 export * from "./matches.js";
