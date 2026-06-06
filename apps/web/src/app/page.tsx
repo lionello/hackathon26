@@ -3,6 +3,7 @@ import { addWatchItem, removeWatchItem, updateWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
 import { SubmitOnEnterInput } from "./components/submit-on-enter-input";
+import { ValidRange } from "./components/valid-range";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,7 @@ export default async function HomePage() {
                               <td>{item.store}</td>
                               <td>{item.url ? <a href={item.url}>{item.name}</a> : item.name}</td>
                               <td className="price">{item.price === null ? "Unavailable" : `$${item.price.toFixed(2)}`}</td>
-                              <td>{[item.valid_from, item.valid_to].filter(Boolean).join(" to ") || "Current flyer"}</td>
+                              <td><ValidRange from={item.valid_from} to={item.valid_to} /></td>
                             </tr>
                           ))}
                         </tbody>
