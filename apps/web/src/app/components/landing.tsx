@@ -51,7 +51,7 @@ export function Landing() {
       <header className="landing-nav">
         <div className="brand">
           <span className="brand-dot" aria-hidden="true" />
-          Flyer Watch
+          Flyer Ping
         </div>
         <a className="button" href="/auth/login">
           Sign in
@@ -65,7 +65,7 @@ export function Landing() {
             Stop hunting flyers. Let the deals come to you.
           </h1>
           <p className="hero-sub text-pretty">
-            Flyer Watch tracks Loblaws, No Frills, Metro, Sobeys, Walmart, Whole
+            Flyer Ping tracks Loblaws, No Frills, Metro, Sobeys, Walmart, Whole
             Foods, and Sungiven. The moment a net-new watched item appears on
             sale, an email hits your inbox.
           </p>
@@ -165,7 +165,7 @@ export function Landing() {
       </section>
 
       <footer className="landing-footer">
-        <span className="brand">Flyer Watch</span>
+        <span className="brand">Flyer Ping</span>
         <span className="muted">Vancouver supermarket sale alerts, delivered by SMTP.</span>
       </footer>
     </main>

@@ -30,7 +30,7 @@ export async function sendDealDigest(user: UserRow, deals: DealMatch[]): Promise
   await getTransporter().sendMail({
     from,
     to: user.email,
-    subject: `Flyer Watch found ${deals.length} sale${deals.length === 1 ? "" : "s"}`,
+    subject: `Flyer Ping found ${deals.length} sale${deals.length === 1 ? "" : "s"}`,
     html,
     text
   });
