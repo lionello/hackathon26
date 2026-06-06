@@ -56,7 +56,7 @@ export class SungivenSource implements FlyerSource {
 }
 
 export async function getFlyerImageUrls(): Promise<string[]> {
-  const res = await fetch("https://www.sungivenfoods.ca/flyer", {
+  const res = await fetch("https://www.sungivenfoods.ca/about/sunny-times-special/", {
     headers: { "User-Agent": "flyer-watch/0.1" },
     signal: AbortSignal.timeout(15000)
   });

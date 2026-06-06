@@ -60,13 +60,14 @@ export class WholeFoodsSource implements FlyerSource {
         });
       }
     }
-    await setCachedItems(this.name, key, collected, this.ttlSeconds);
-    return collected;
+    const deduped = dedupeItems(collected);
+    await setCachedItems(this.name, key, deduped, this.ttlSeconds);
+    return deduped;
   }
 }
 
 function extractNextData(html: string): unknown {
-  const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([^<]+)<\/script>/);
+  const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
   if (!match) {
     throw new Error("Whole Foods __NEXT_DATA__ script not found");
   }
@@ -86,9 +87,18 @@ function findPromotions(root: unknown): Promotion[] {
     const record = value as Record<string, unknown>;
     if (Array.isArray(record.promotions)) {
       promotions.push(...(record.promotions as Promotion[]));
+      return;
     }
     for (const child of Object.values(record)) visit(child);
   };
   visit(root);
   return promotions;
+}
+
+function dedupeItems(items: FlyerItem[]): FlyerItem[] {
+  const byId = new Map<string, FlyerItem>();
+  for (const item of items) {
+    byId.set(item.source_item_id, item);
+  }
+  return [...byId.values()];
 }

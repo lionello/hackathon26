@@ -30,7 +30,12 @@ async function main(): Promise<void> {
 }
 
 async function sweep(): Promise<void> {
-  await getPool().query("insert into worker_jobs(kind, user_id, payload) select 'warm-user', id, '{}'::jsonb from users");
+  await getPool().query(
+    `insert into worker_jobs(kind, user_id, payload)
+     select 'warm-user', u.id, '{}'::jsonb
+     from users u
+     where exists (select 1 from watch_items w where w.user_id = u.id)`
+  );
   await drainJobs();
 }
 

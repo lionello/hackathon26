@@ -3,7 +3,7 @@ import { parsePriceText } from "../priceParser.js";
 import type { FlyerItem, FlyerSource, SearchContext, SearchOptions } from "../types.js";
 
 const endpoint = "https://backflipp.wishabi.com/flipp/items/search";
-const flippStores = new Set(["Loblaws", "No Frills", "Metro", "Sobeys", "Walmart"]);
+const flippStoreNames = ["loblaws", "no frills", "metro", "sobeys", "walmart"];
 
 type FlippItem = {
   id?: string | number;
@@ -64,7 +64,7 @@ export class FlippSource implements FlyerSource {
           url: item.flyer_item_url ?? item.url ?? null
         };
       })
-      .filter((item) => flippStores.has(item.store));
+      .filter((item) => flippStoreNames.some((store) => item.store.toLowerCase().includes(store)));
 
     await setCachedItems(this.name, key, items, this.ttlSeconds);
     return items;
