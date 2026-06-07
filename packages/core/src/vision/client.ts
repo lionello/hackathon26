@@ -1,11 +1,15 @@
 import { getOptionalEnv } from "../env.js";
 
-export async function extractFlyerJsonFromImage(imageUrl: string): Promise<unknown> {
+export async function extractFlyerJsonFromImage(
+  imageUrl: string,
+): Promise<unknown> {
   // The `ai_runner` model provider service injects AI_RUNNER_URL / AI_RUNNER_MODEL.
   // VISION_* are explicit overrides (e.g. pointing at a non-Compose endpoint).
-  const baseUrl = getOptionalEnv("VISION_BASE_URL") || getOptionalEnv("AI_RUNNER_URL");
-  const model = getOptionalEnv("VISION_MODEL") || getOptionalEnv("AI_RUNNER_MODEL");
-  const apiKey = getOptionalEnv("VISION_API_KEY") || "dmr-local";
+  const baseUrl =
+    getOptionalEnv("VISION_BASE_URL") || getOptionalEnv("AI_RUNNER_URL");
+  const model =
+    getOptionalEnv("VISION_MODEL") || getOptionalEnv("AI_RUNNER_MODEL");
+  const apiKey = getOptionalEnv("OPENAI_API_KEY") || "dmr-local";
   if (!baseUrl || !model) {
     throw new Error(
       "Vision client requires a base URL and model (AI_RUNNER_URL/AI_RUNNER_MODEL from the model provider, or VISION_BASE_URL/VISION_MODEL overrides)",
@@ -27,7 +31,7 @@ export async function extractFlyerJsonFromImage(imageUrl: string): Promise<unkno
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       model,
@@ -36,16 +40,21 @@ export async function extractFlyerJsonFromImage(imageUrl: string): Promise<unkno
         {
           role: "user",
           content: [
-            { type: "text", text: "Extract supermarket flyer sale items as JSON: {items:[{name,price_text,valid_from,valid_to,image_url,url}]}. Preserve multi-pack text in name." },
-            { type: "image_url", image_url: { url: dataUrl } }
-          ]
-        }
-      ]
-    })
+            {
+              type: "text",
+              text: "Extract supermarket flyer sale items as JSON: {items:[{name,price_text,valid_from,valid_to,image_url,url}]}. Preserve multi-pack text in name.",
+            },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+    }),
   });
   if (!response.ok) {
     throw new Error(`Vision request failed: ${response.status}`);
   }
-  const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const json = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
   return JSON.parse(json.choices?.[0]?.message?.content ?? "{}");
 }

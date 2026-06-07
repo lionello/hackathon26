@@ -31,7 +31,7 @@ services:
       # No VISION_MODEL override — fall back to AI_RUNNER_MODEL injected by the
       # ai_runner provider (ai/qwen3-vl:4B-UD-Q4_K_XL) so the requested model
       # matches what the runner actually serves.
-      VISION_API_KEY: ${VISION_API_KEY:-dmr-local}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-dmr-local}
     volumes:
       - .:/app
       - /app/node_modules
