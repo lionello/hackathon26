@@ -1,7 +1,6 @@
 import { getOidcConfig, getOptionalEnv, getPool, oidc, sessionCookieName, sessionCookieOptions, signSession } from "@flyer-watch/core";
-import { cookies, headers } from "next/headers";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
@@ -10,7 +9,7 @@ export async function GET(request: Request) {
     const pkceCodeVerifier = jar.get("fw_pkce")?.value;
     const expectedState = jar.get("fw_state")?.value;
     if (!pkceCodeVerifier || !expectedState) {
-      redirectToAuthError("Missing sign-in state", "The sign-in session expired or was opened without the original login tab.");
+      return redirectToAuthError("Missing sign-in state", "The sign-in session expired or was opened without the original login tab.");
     }
     // openid-client derives the token-exchange redirect_uri from this URL's
     // origin+path (it strips the query). Behind a TLS-terminating proxy
@@ -27,26 +26,23 @@ export async function GET(request: Request) {
     const claims = tokens.claims();
     const sub = claims?.sub;
     if (!sub) {
-      redirectToAuthError("Missing user key", "ConsentKeys did not return a subject claim for this sign-in.");
+      return redirectToAuthError("Missing user key", "ConsentKeys did not return a subject claim for this sign-in.");
     }
     const email = typeof claims.email === "string" ? claims.email : null;
     const user = await upsertUser(sub, email);
-    jar.set(sessionCookieName, signSession({ userId: user.id, consentkeysSub: sub }), {
+    const response = NextResponse.redirect(getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000"));
+    response.cookies.set(sessionCookieName, signSession({ userId: user.id, consentkeysSub: sub }), {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
       secure: sessionCookieOptions().includes("Secure"),
       maxAge: 60 * 60 * 24 * 30
     });
-    jar.delete("fw_pkce");
-    jar.delete("fw_state");
-    await headers();
-    redirect(getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000"));
+    response.cookies.set("fw_pkce", "", { path: "/", httpOnly: true, sameSite: "lax", maxAge: 0 });
+    response.cookies.set("fw_state", "", { path: "/", httpOnly: true, sameSite: "lax", maxAge: 0 });
+    return response;
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-    redirectToAuthError("Sign-in failed", authErrorDetails(error));
+    return redirectToAuthError("Sign-in failed", authErrorDetails(error));
   }
 }
 
@@ -62,9 +58,9 @@ async function upsertUser(sub: string, email: string | null): Promise<{ id: stri
   return result.rows[0]!;
 }
 
-function redirectToAuthError(message: string, details: string): never {
+function redirectToAuthError(message: string, details: string): NextResponse {
   const params = new URLSearchParams({ message, details });
-  redirect(`/auth/error?${params}`);
+  return NextResponse.redirect(new URL(`/auth/error?${params}`, getOptionalEnv("PUBLIC_BASE_URL", "http://localhost:3000")));
 }
 
 function authErrorDetails(error: unknown): string {
