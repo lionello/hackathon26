@@ -1,5 +1,5 @@
 import { getPool, type SearchContext } from "@flyer-watch/core";
-import { saveOnboarding, sendTestEmailForCurrentUser } from "../actions";
+import { saveEmailAddress, saveOnboarding, sendTestEmailForCurrentUser } from "../actions";
 import { requireSession } from "../session";
 
 export const dynamic = "force-dynamic";
@@ -20,35 +20,58 @@ export default async function SettingsPage() {
       </div>
 
       <div className="settings-layout">
-        <section className="panel">
-          <h2>Location &amp; Stores</h2>
-          <p className="muted settings-intro">
-            These defaults tell the worker which postal code and store branches to warm.
-            Update them whenever you move or shop a different location.
-          </p>
-          <form className="stack" action={saveOnboarding}>
-            <label>
-              Postal code
-              <input name="postalCode" defaultValue={user?.postal_code ?? "V6B 1A1"} />
-            </label>
-            <label>
-              Whole Foods store id
-              <input name="wholeFoodsStore" defaultValue={ctx.storeIds.wholefoods?.[0] ?? "10244"} />
-            </label>
-            <label>
-              Sungiven store
-              <input name="sungivenStore" defaultValue={ctx.storeIds.sungiven?.[0] ?? "vancouver"} />
-            </label>
-            <button className="button" type="submit">Save settings</button>
-          </form>
-        </section>
+        <div className="stack">
+          <section className="panel">
+            <h2>Location &amp; Stores</h2>
+            <p className="muted settings-intro">
+              These defaults tell the worker which postal code and store branches to warm.
+              Update them whenever you move or shop a different location.
+            </p>
+            <form className="stack" action={saveOnboarding}>
+              <label>
+                Postal code
+                <input name="postalCode" defaultValue={user?.postal_code ?? "V6B 1A1"} />
+              </label>
+              <label>
+                Whole Foods store id
+                <input name="wholeFoodsStore" defaultValue={ctx.storeIds.wholefoods?.[0] ?? "10244"} />
+              </label>
+              <label>
+                Sungiven store
+                <input name="sungivenStore" defaultValue={ctx.storeIds.sungiven?.[0] ?? "vancouver"} />
+              </label>
+              <button className="button" type="submit">Save settings</button>
+            </form>
+          </section>
+
+          <section className="panel">
+            <h2>Email</h2>
+            <p className="muted settings-intro">
+              Deal alerts and test emails are sent to this address.
+            </p>
+            <form className="stack" action={saveEmailAddress}>
+              <label>
+                Email address
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  defaultValue={user?.email ?? ""}
+                  placeholder={session.consentkeysSub}
+                />
+              </label>
+              <button className="button" type="submit">Save email</button>
+            </form>
+          </section>
+        </div>
 
         <aside className="panel settings-aside stack">
           <h2>Account</h2>
           <dl className="settings-meta">
             <div>
               <dt className="muted">Email</dt>
-              <dd>{user?.email ?? session.consentkeysSub}</dd>
+              <dd className="email-address">{user?.email ?? session.consentkeysSub}</dd>
             </div>
             <div>
               <dt className="muted">Postal code</dt>

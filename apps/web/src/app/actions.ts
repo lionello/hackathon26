@@ -56,6 +56,17 @@ export async function saveOnboarding(formData: FormData): Promise<void> {
   revalidatePath("/settings");
 }
 
+export async function saveEmailAddress(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email || !email.includes("@")) {
+    return;
+  }
+  await getPool().query("update users set email = $1, updated_at = now() where id = $2", [email, session.userId]);
+  revalidatePath("/");
+  revalidatePath("/settings");
+}
+
 export async function triggerFetchForCurrentUser(): Promise<void> {
   const session = await requireSession();
   await enqueueWarmUserJob(session.userId);

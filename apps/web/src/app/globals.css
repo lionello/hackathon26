@@ -206,6 +206,13 @@ a {
   margin: 0;
   font-weight: 600;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.email-address {
+  display: block;
+  max-width: 100%;
 }
 
 .admin-jobs {
