@@ -1,15 +1,20 @@
 import { createSources } from "./sources/index.js";
-import type { DealMatch, SearchContext, SearchOptions, WatchItem } from "./types.js";
+import type { DealMatch, FlyerSource, SearchContext, SearchOptions, WatchItem } from "./types.js";
 
 const sources = createSources();
 
-export async function findMatches(watchItems: WatchItem[], ctx: SearchContext, options: SearchOptions): Promise<DealMatch[]> {
+export async function findMatches(
+  watchItems: WatchItem[],
+  ctx: SearchContext,
+  options: SearchOptions,
+  activeSources: FlyerSource[] = sources
+): Promise<DealMatch[]> {
   const matches: DealMatch[] = [];
   const seen = new Set<string>();
   for (const watchItem of watchItems) {
-    for (const source of sources) {
+    for (const source of activeSources) {
       for (const query of queryVariants(watchItem.query)) {
-        const items = await source.search(query, ctx, options);
+        const items = await searchSource(source, query, ctx, options);
         for (const item of items) {
           if (item.price === null) {
             continue;
@@ -25,6 +30,24 @@ export async function findMatches(watchItems: WatchItem[], ctx: SearchContext, o
     }
   }
   return matches;
+}
+
+async function searchSource(
+  source: FlyerSource,
+  query: string,
+  ctx: SearchContext,
+  options: SearchOptions
+) {
+  try {
+    return await source.search(query, ctx, options);
+  } catch (error) {
+    console.warn("flyer source search failed", {
+      source: source.name,
+      query,
+      error: errorMessage(error)
+    });
+    return [];
+  }
 }
 
 export function queryVariants(query: string): string[] {
@@ -64,4 +87,11 @@ function singularizeWord(word: string): string {
     return word.slice(0, -1);
   }
   return word;
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }
