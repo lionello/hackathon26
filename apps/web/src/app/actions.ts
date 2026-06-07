@@ -55,3 +55,10 @@ export async function saveOnboarding(formData: FormData): Promise<void> {
   revalidatePath("/");
   revalidatePath("/settings");
 }
+
+export async function triggerFetchForCurrentUser(): Promise<void> {
+  const session = await requireSession();
+  await enqueueWarmUserJob(session.userId);
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
