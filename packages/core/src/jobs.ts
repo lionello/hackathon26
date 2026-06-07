@@ -13,8 +13,14 @@ export interface UserJobStatus {
   lastError: { message: string; at: Date } | null;
 }
 
+interface JobStatusRow {
+  status: string;
+  last_error: string | null;
+  updated_at: Date;
+}
+
 export async function getUserJobStatus(userId: string): Promise<UserJobStatus> {
-  const result = await getPool().query<{ status: string; last_error: string | null; updated_at: Date }>(
+  const result = await getPool().query<JobStatusRow>(
     `select status, last_error, updated_at
      from worker_jobs
      where user_id = $1 and kind = 'warm-user'
@@ -22,10 +28,17 @@ export async function getUserJobStatus(userId: string): Promise<UserJobStatus> {
      limit 10`,
     [userId]
   );
-  const pending = result.rows.some((row) => row.status === "pending" || row.status === "running");
-  const lastFailure = result.rows.find((row) => row.status === "failed" && row.last_error);
+  return summarizeUserJobStatus(result.rows);
+}
+
+export function summarizeUserJobStatus(rows: JobStatusRow[]): UserJobStatus {
+  const pending = rows.some((row) => row.status === "pending" || row.status === "running");
+  const lastFailure = rows.find((row) => row.status === "failed" && row.last_error);
+  const newerSuccess = lastFailure
+    ? rows.some((row) => row.status === "done" && row.updated_at > lastFailure.updated_at)
+    : false;
   return {
     pending,
-    lastError: lastFailure ? { message: lastFailure.last_error!, at: lastFailure.updated_at } : null
+    lastError: lastFailure && !newerSuccess ? { message: lastFailure.last_error!, at: lastFailure.updated_at } : null
   };
 }
