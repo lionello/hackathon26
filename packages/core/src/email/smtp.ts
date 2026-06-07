@@ -36,6 +36,21 @@ export async function sendDealDigest(user: UserRow, deals: DealMatch[]): Promise
   });
 }
 
+export async function sendTestEmail(user: UserRow): Promise<void> {
+  if (!user.email) {
+    return;
+  }
+  const from = getRequiredEnv("MAIL_FROM");
+  const sentAt = new Date().toISOString();
+  await getTransporter().sendMail({
+    from,
+    to: user.email,
+    subject: "Flyer Ping test email",
+    html: `<p>This is a Flyer Ping test email.</p><p>Sent at <code>${escapeHtml(sentAt)}</code>.</p>`,
+    text: `This is a Flyer Ping test email.\nSent at ${sentAt}.`
+  });
+}
+
 export function renderDealDigest(deals: DealMatch[]): { html: string; text: string } {
   const rows = deals.map(({ item }) => {
     const price = item.price === null ? "price unavailable" : `$${item.price.toFixed(2)}`;

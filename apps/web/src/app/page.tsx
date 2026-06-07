@@ -2,6 +2,7 @@ import { findMatches, getPool, getUserJobStatus, type SearchContext, type WatchI
 import { addWatchItem, removeWatchItem, updateWatchItem } from "./actions";
 import { getSession } from "./session";
 import { Landing } from "./components/landing";
+import { LocalTime } from "./components/local-time";
 import { SubmitOnEnterInput } from "./components/submit-on-enter-input";
 import { ValidRange } from "./components/valid-range";
 
@@ -44,7 +45,7 @@ export default async function HomePage() {
       {jobStatus.lastError ? (
         <div className="error-banner" role="alert">
           <div className="error-banner-title">
-            Last flyer fetch failed · {jobStatus.lastError.at.toLocaleString()}
+            Last flyer fetch failed · <LocalTime value={jobStatus.lastError.at.toISOString()} />
           </div>
           <div>
             {jobStatus.pending

@@ -1,5 +1,5 @@
 import { getPool, type SearchContext } from "@flyer-watch/core";
-import { saveOnboarding } from "../actions";
+import { saveOnboarding, sendTestEmailForCurrentUser } from "../actions";
 import { requireSession } from "../session";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export default async function SettingsPage() {
           </form>
         </section>
 
-        <aside className="panel settings-aside">
+        <aside className="panel settings-aside stack">
           <h2>Account</h2>
           <dl className="settings-meta">
             <div>
@@ -55,6 +55,9 @@ export default async function SettingsPage() {
               <dd>{user?.postal_code ?? "V6B 1A1"}</dd>
             </div>
           </dl>
+          <form action={sendTestEmailForCurrentUser}>
+            <button className="button" type="submit">Send test email</button>
+          </form>
           <a className="button button-ghost" href="/auth/logout">Sign out</a>
         </aside>
       </div>

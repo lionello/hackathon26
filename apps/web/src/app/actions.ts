@@ -1,6 +1,6 @@
 "use server";
 
-import { enqueueWarmUserJob, getPool } from "@flyer-watch/core";
+import { enqueueWarmUserJob, getPool, sendTestEmail, type UserRow } from "@flyer-watch/core";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "./session";
 
@@ -61,4 +61,15 @@ export async function triggerFetchForCurrentUser(): Promise<void> {
   await enqueueWarmUserJob(session.userId);
   revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function sendTestEmailForCurrentUser(): Promise<void> {
+  const session = await requireSession();
+  const result = await getPool().query<UserRow>("select * from users where id = $1", [session.userId]);
+  const user = result.rows[0];
+  if (!user) {
+    return;
+  }
+  await sendTestEmail(user);
+  revalidatePath("/settings");
 }

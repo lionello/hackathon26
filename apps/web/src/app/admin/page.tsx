@@ -1,5 +1,6 @@
 import { getPool, getUserJobStatus } from "@flyer-watch/core";
 import { triggerFetchForCurrentUser } from "../actions";
+import { LocalTime } from "../components/local-time";
 import { requireSession } from "../session";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ export default async function AdminPage() {
             {jobStatus.lastError ? (
               <div>
                 <dt className="muted">Error time</dt>
-                <dd>{jobStatus.lastError.at.toLocaleString()}</dd>
+                <dd><LocalTime value={jobStatus.lastError.at.toISOString()} /></dd>
               </div>
             ) : null}
           </dl>
@@ -84,8 +85,8 @@ export default async function AdminPage() {
                 <tr key={job.id}>
                   <td>{job.status}</td>
                   <td>{job.attempts}</td>
-                  <td>{job.run_after.toLocaleString()}</td>
-                  <td>{job.updated_at.toLocaleString()}</td>
+                  <td><LocalTime value={job.run_after.toISOString()} /></td>
+                  <td><LocalTime value={job.updated_at.toISOString()} /></td>
                   <td>{job.last_error ?? ""}</td>
                 </tr>
               ))}
